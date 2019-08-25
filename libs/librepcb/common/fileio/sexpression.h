@@ -104,6 +104,17 @@ public:
   }
 
   template <typename T>
+  T getValueByPathOrDefault(const QString& path, T defaultValue,
+                            bool throwIfEmpty = false) const {
+    const SExpression* child = tryGetChildByPath(path);
+    if (child) {
+      return child->getValueOfFirstChild<T>(throwIfEmpty);
+    } else {
+      return defaultValue;
+    }
+  }
+
+  template <typename T>
   T getValueOfFirstChild(bool throwIfEmpty = false) const {
     if (mChildren.count() < 1) {
       throw FileParseError(__FILE__, __LINE__, mFilePath, -1, -1, QString(),
