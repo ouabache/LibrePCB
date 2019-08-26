@@ -60,8 +60,8 @@ public:
   Hole() = delete;
   Hole(const Hole& other) noexcept;
   Hole(const Uuid& uuid, const Hole& other) noexcept;
-  Hole(const Uuid& uuid, const Point& position,
-       const PositiveLength& diameter) noexcept;
+  Hole(const Uuid& uuid, const Point& position, const PositiveLength& diameter,
+       const UnsignedLength& length, const Angle& rotation) noexcept;
   explicit Hole(const SExpression& node);
   ~Hole() noexcept;
 
@@ -86,6 +86,8 @@ private:  // Data
   Uuid           mUuid;
   Point          mPosition;
   PositiveLength mDiameter;
+  UnsignedLength mLength;
+  Angle          mRotation;
 };
 
 /*******************************************************************************

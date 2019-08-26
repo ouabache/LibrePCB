@@ -37,7 +37,9 @@ Hole::Hole(const Hole& other) noexcept
   : onEdited(*this),
     mUuid(other.mUuid),
     mPosition(other.mPosition),
-    mDiameter(other.mDiameter) {
+    mDiameter(other.mDiameter),
+    mLength(other.mLength),
+    mRotation(other.mRotation) {
 }
 
 Hole::Hole(const Uuid& uuid, const Hole& other) noexcept : Hole(other) {
@@ -45,15 +47,24 @@ Hole::Hole(const Uuid& uuid, const Hole& other) noexcept : Hole(other) {
 }
 
 Hole::Hole(const Uuid& uuid, const Point& position,
-           const PositiveLength& diameter) noexcept
-  : onEdited(*this), mUuid(uuid), mPosition(position), mDiameter(diameter) {
+           const PositiveLength& diameter, const UnsignedLength& length,
+           const Angle& rotation) noexcept
+  : onEdited(*this),
+    mUuid(uuid),
+    mPosition(position),
+    mDiameter(diameter),
+    mLength(length),
+    mRotation(rotation) {
 }
 
 Hole::Hole(const SExpression& node)
   : onEdited(*this),
     mUuid(node.getChildByIndex(0).getValue<Uuid>()),
     mPosition(node.getChildByPath("position")),
-    mDiameter(node.getValueByPath<PositiveLength>("diameter")) {
+    mDiameter(node.getValueByPath<PositiveLength>("diameter")),
+    mLength(node.getValueByPathOrDefault<UnsignedLength>("length",
+                                                         UnsignedLength(0))),
+    mRotation(node.getValueByPathOrDefault<Angle>("rotation", Angle())) {
 }
 
 Hole::~Hole() noexcept {
@@ -90,6 +101,8 @@ bool Hole::setDiameter(const PositiveLength& diameter) noexcept {
 void Hole::serialize(SExpression& root) const {
   root.appendChild(mUuid);
   root.appendChild("diameter", mDiameter, false);
+  root.appendChild("length", mLength, false);
+  root.appendChild("rotation", mRotation, false);
   root.appendChild(mPosition.serializeToDomElement("position"), false);
 }
 
