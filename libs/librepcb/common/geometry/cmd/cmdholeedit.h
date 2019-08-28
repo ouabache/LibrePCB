@@ -83,6 +83,10 @@ private:
   Point          mNewPosition;
   PositiveLength mOldDiameter;
   PositiveLength mNewDiameter;
+  UnsignedLength mOldLength;
+  UnsignedLength mNewLength;
+  Angle          mOldRotation;
+  Angle          mNewRotation;
 };
 
 /*******************************************************************************
