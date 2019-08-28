@@ -49,6 +49,8 @@ HolePropertiesDialog::HolePropertiesDialog(Hole& hole, UndoStack& undoStack,
   mUi->spbDiameter->setValue(mHole.getDiameter()->toMm());
   mUi->spbPosX->setValue(mHole.getPosition().getX().toMm());
   mUi->spbPosY->setValue(mHole.getPosition().getY().toMm());
+  mUi->spbLength->setValue(mHole.getLength()->toMm());
+  mUi->spbRotation->setValue(mHole.getRotation().toDeg());
 }
 
 HolePropertiesDialog::~HolePropertiesDialog() noexcept {
@@ -84,6 +86,9 @@ bool HolePropertiesDialog::applyChanges() noexcept {
                      false);  // can throw
     cmd->setPosition(
         Point::fromMm(mUi->spbPosX->value(), mUi->spbPosY->value()), false);
+    cmd->setLength(UnsignedLength(Length::fromMm(mUi->spbLength->value())),
+                   false);  // can throw
+    cmd->setRotation(Angle::fromDeg(mUi->spbRotation->value()), false);
     mUndoStack.execCmd(cmd.take());
     return true;
   } catch (const Exception& e) {
