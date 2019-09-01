@@ -40,12 +40,15 @@ namespace librepcb {
 HoleGraphicsItem::HoleGraphicsItem(Hole&                           hole,
                                    const IF_GraphicsLayerProvider& lp,
                                    QGraphicsItem* parent) noexcept
-  : PrimitiveCircleGraphicsItem(parent),
+  : PrimitivePathGraphicsItem(parent),
     mHole(hole),
     mLayerProvider(lp),
     mOnEditedSlot(*this, &HoleGraphicsItem::holeEdited) {
+  // calculate path
+
   setPosition(mHole.getPosition());
-  setDiameter(positiveToUnsigned(mHole.getDiameter()));
+  setPath(getPath(mHole));
+  setRotation(mHole.getRotation());
   setLineLayer(mLayerProvider.getLayer(GraphicsLayer::sBoardDrillsNpth));
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   setZValue(5);
@@ -70,13 +73,24 @@ HoleGraphicsItem::~HoleGraphicsItem() noexcept {
  ******************************************************************************/
 
 QPainterPath HoleGraphicsItem::shape() const noexcept {
-  return PrimitiveCircleGraphicsItem::shape() +
-         mOriginCrossGraphicsItem->shape();
+  return PrimitivePathGraphicsItem::shape() + mOriginCrossGraphicsItem->shape();
 }
 
 /*******************************************************************************
  *  Private Methods
  ******************************************************************************/
+
+QPainterPath HoleGraphicsItem::getPath(const Hole& hole) noexcept {
+  QPainterPath path;
+  qreal        halflength = hole.getLength()->toPx() / 2;
+  qreal        radius     = hole.getDiameter()->toPx() / 2;
+  path.moveTo(halflength, -radius);
+  path.lineTo(-halflength, -radius);
+  path.arcTo(-halflength - radius, -radius, 2 * radius, 2 * radius, 90, 180);
+  path.lineTo(halflength, radius);
+  path.arcTo(halflength - radius, -radius, 2 * radius, 2 * radius, 270, 180);
+  return path;
+}
 
 void HoleGraphicsItem::holeEdited(const Hole& hole,
                                   Hole::Event event) noexcept {
@@ -85,9 +99,15 @@ void HoleGraphicsItem::holeEdited(const Hole& hole,
       setPosition(hole.getPosition());
       break;
     case Hole::Event::DiameterChanged:
-      setDiameter(positiveToUnsigned(hole.getDiameter()));
+      setPath(getPath(mHole));
       mOriginCrossGraphicsItem->setSize(positiveToUnsigned(hole.getDiameter()) +
                                         UnsignedLength(500000));
+      break;
+    case Hole::Event::LengthChanged:
+      setPath(getPath(mHole));
+      break;
+    case Hole::Event::RotationChanged:
+      setRotation(mHole.getRotation());
       break;
     default:
       qWarning() << "Unhandled switch-case in HoleGraphicsItem::holeEdited()";
