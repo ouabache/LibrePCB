@@ -22,6 +22,7 @@
  ******************************************************************************/
 #include "holegraphicsitem.h"
 
+#include "../geometry/path.h"
 #include "../graphics/graphicslayer.h"
 #include "origincrossgraphicsitem.h"
 
@@ -81,15 +82,9 @@ QPainterPath HoleGraphicsItem::shape() const noexcept {
  ******************************************************************************/
 
 QPainterPath HoleGraphicsItem::getPath(const Hole& hole) noexcept {
-  QPainterPath path;
-  qreal        halflength = hole.getLength()->toPx() / 2;
-  qreal        radius     = hole.getDiameter()->toPx() / 2;
-  path.moveTo(halflength, -radius);
-  path.lineTo(-halflength, -radius);
-  path.arcTo(-halflength - radius, -radius, 2 * radius, 2 * radius, 90, 180);
-  path.lineTo(halflength, radius);
-  path.arcTo(halflength - radius, -radius, 2 * radius, 2 * radius, 270, 180);
-  return path;
+  Length totalLength = hole.getLength().get_value() + hole.getDiameter().get_value();
+  Path path = Path::obround(PositiveLength(totalLength), hole.getDiameter());
+  return path.toQPainterPathPx(false);
 }
 
 void HoleGraphicsItem::holeEdited(const Hole& hole,
